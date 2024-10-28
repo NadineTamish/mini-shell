@@ -54,7 +54,7 @@ extern int yydebug;
     GREAT = 260,
     NEWLINE = 261,
     LESS = 262,
-    GREATGREAT = 263,
+    APPEND = 263,
     PIPE = 264,
     AMPERSAND = 265
   };
@@ -65,7 +65,7 @@ extern int yydebug;
 #define GREAT 260
 #define NEWLINE 261
 #define LESS 262
-#define GREATGREAT 263
+#define APPEND 263
 #define PIPE 264
 #define AMPERSAND 265
 
