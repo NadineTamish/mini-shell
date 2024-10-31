@@ -16,7 +16,7 @@
 #include <sys/wait.h>
 #include <string.h>
 #include <signal.h>
-
+#include <fcntl.h>   // For open() and file flags
 #include "command.h"
 
 SimpleCommand::SimpleCommand()
@@ -57,6 +57,7 @@ Command::Command()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	_appendFlag=0;
 }
 
 void
@@ -101,6 +102,7 @@ Command:: clear()
 	_inputFile = 0;
 	_errFile = 0;
 	_background = 0;
+	_appendFlag=0;
 }
 
 void
@@ -128,14 +130,76 @@ Command::print()
 	printf( "\n\n" );
 	
 }
+void handle_sigint(int sig) {
+    printf("\nmyshell> ");  // Print a new prompt on Ctrl-C
+    fflush(stdout);          // Ensure the prompt appears immediately
+}
 
 void
 Command::execute()
 {
+	int defaultin = dup(0);     // Save default stdin
+    int defaultout = dup(1);    // Save default stdout
+    int defaulterr = dup(2);    // Save default stderr
+
+	int infd = defaultin;
+    int outfd = defaultout;
+    int errfd = defaulterr;
+
+
+	if (_inputFile != nullptr) {
+        infd = open(_inputFile, O_RDONLY);
+        if (infd < 0) {
+            perror("Input file open error");
+            return;
+        }
+        dup2(infd, 0);
+        close(infd);
+    }
+
+    // Output redirection (overwrites or appends)
+    if (_outFile != nullptr) {
+        if (_appendFlag) {
+            outfd = open(_outFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
+        } else {
+            outfd = open(_outFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        }
+        if (outfd < 0) {
+            perror("Output file open error");
+            return;
+        }
+        dup2(outfd, 1);
+        close(outfd);
+    }
+
+    // Error redirection (overwrites or appends)
+    if (_errFile != nullptr) {
+        if (_appendFlag) {
+            errfd = open(_errFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
+        } else {
+            errfd = open(_errFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        }
+        if (errfd < 0) {
+            perror("Error file open error");
+            return;
+        }
+        dup2(errfd, 2);
+        close(errfd);
+    }
+
 	// Don't do anything if there are no simple commands
-	if ( _numberOfSimpleCommands == 0 ) {
-		prompt();
-		return;
+	if ( _numberOfSimpleCommands == 1 && strcmp(_simpleCommands[0]->_arguments[0],"exit")==0 ) {
+		printf("Good Bye !!\n");
+		//prompt();
+		//return;
+		clear();
+		dup2(defaultin, 0);
+        dup2(defaultout, 1);
+        dup2(defaulterr, 2);
+        close(defaultin);
+        close(defaultout);
+        close(defaulterr);
+		exit(0); // this exits the shell
 	}
 
 	// Print contents of Command data structure
@@ -145,6 +209,43 @@ Command::execute()
 	// For every simple command fork a new process
 	// Setup i/o redirection
 	// and call exec
+	
+	// Execute each simple command
+	pid_t pid;
+    for (int i = 0; i < _numberOfSimpleCommands; i++) {
+        pid = fork();
+		if ( pid == -1 ) {
+			perror( "fork failed\n");
+			exit( 2 );
+		}
+
+		if (pid == 0) {
+			//Child
+			
+			execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
+			perror("execvp failed");
+			exit(1);
+		}
+	}
+
+	// Restore input, output, and error
+
+	dup2( defaultin, 0 );
+	dup2( defaultout, 1 );
+	dup2( defaulterr, 2 );
+
+	// Close file descriptors that are not needed
+
+	close( defaultin );
+	close( defaultout );
+	close( defaulterr );
+	
+	//signal_handler(SIGINT,logger);
+    signal(SIGINT, handle_sigint);
+	// Wait for last command if not in background
+    if (!_background) {
+        waitpid(pid, nullptr, 0);
+    }
 
 	// Clear to prepare for next command
 	clear();
@@ -170,6 +271,8 @@ int yyparse(void);
 int 
 main()
 {
+	signal(SIGINT, handle_sigint);
+	//signal(SIGINT,SIG_IGN); //sets the SIGINT signal handler to SIG_IGN, which tells the program to ignore the signal instead of terminating.
 	Command::_currentCommand.prompt();
 	yyparse();
 	return 0;

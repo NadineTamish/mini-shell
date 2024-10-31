@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT NEWLINE LESS APPEND PIPE AMPERSAND
+%token 	NOTOKEN GREAT NEWLINE LESS APPEND PIPE AMPERSAND EXIT
 
 %union	{
 		char   *string_val;
@@ -49,7 +49,11 @@ simple_command:
 		printf("   Yacc: Execute command\n");
 		Command::_currentCommand.execute();
 	}
-	| NEWLINE 
+	| EXIT NEWLINE{
+		printf("Good bye!!\n");
+        exit(0); // Exit the shell
+
+	} 
 	| error NEWLINE { yyerrok; }
 	;
     
@@ -130,7 +134,7 @@ iomodifier_opt:
 	| APPEND WORD {
 		printf("   Yacc: insert output \"%s\"\n", $2);
 		Command::_currentCommand._outFile = $2;
-		Command::_currentCommand._outFile = $2;
+		// Command::_currentCommand._outFile = $2;
 	}
 	;
 

@@ -56,7 +56,8 @@ extern int yydebug;
     LESS = 262,
     APPEND = 263,
     PIPE = 264,
-    AMPERSAND = 265
+    AMPERSAND = 265,
+    EXIT = 266
   };
 #endif
 /* Tokens.  */
@@ -68,6 +69,7 @@ extern int yydebug;
 #define APPEND 263
 #define PIPE 264
 #define AMPERSAND 265
+#define EXIT 266
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -78,7 +80,7 @@ union YYSTYPE
 		char   *string_val;
 	
 
-#line 82 "y.tab.h"
+#line 84 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

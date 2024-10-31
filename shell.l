@@ -16,6 +16,8 @@
 
 %%
 
+[ \t\n]+     /* Ignore whitespace */
+
 \n 	{
 		return NEWLINE;
 	}
@@ -42,6 +44,10 @@
 
 "|"		{
 		return PIPE;
+}
+
+"exit"	{
+		return EXIT;
 }
 
 [^ \t\n][^ \t\n]*  {

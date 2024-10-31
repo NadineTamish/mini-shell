@@ -1,0 +1,38 @@
+
+
+              COMMAND TABLE                
+
+  #   Simple Commands
+  --- ----------------------------------------------------------
+  0   "ls" 	"-al" 	
+
+  Output       Input        Error        Background
+  ------------ ------------ ------------ ------------
+  out          default      default      NO          
+
+
+total 368
+drwxrwxrwx 5 nadine nadine  4096 Oct 31 22:21 .
+drwxrwxr-x 3 nadine nadine  4096 Oct 24 20:44 ..
+-rwxrwxrwx 1 nadine nadine  6542 Oct 31 22:06 command.cc
+-rwxrwxrwx 1 nadine nadine   756 Oct 30 22:41 command.h
+-rw-rw-r-- 1 nadine nadine 34400 Oct 31 22:07 command.o
+-rw-rw-r-- 1 nadine nadine 14464 Oct 31 22:10 etc.list.txt
+drwxrwxrwx 2 nadine nadine  4096 Oct 31 21:07 examples
+drwxrwxr-x 8 nadine nadine  4096 Oct 28 21:10 .git
+-rw-rw-r-- 1 nadine nadine     9 Oct 28 18:49 .gitignore
+-rw-rw-r-- 1 nadine nadine 45500 Oct 29 23:22 lex.yy.c
+-rw-rw-r-- 1 nadine nadine 43632 Oct 29 23:22 lex.yy.o
+-rwxrwxrwx 1 nadine nadine   338 Oct 24 22:11 Makefile
+-rw-rw-r-- 1 nadine nadine   317 Oct 31 22:22 out
+-rw-rw-r-- 1 nadine nadine  1767 Oct 31 22:21 out2
+-rw-rw-r-- 1 nadine nadine     0 Oct 26 18:45 outfile
+-rw-rw-r-- 1 nadine nadine  1513 Oct 31 22:10 output.txt
+-rwxrwxr-x 1 nadine nadine 70152 Oct 31 22:07 shell
+-rwxrwxrwx 1 nadine nadine   589 Oct 29 23:18 shell.l
+-rwxrwxrwx 1 nadine nadine  2693 Oct 29 23:11 shell.y
+drwxrwxr-x 2 nadine nadine  4096 Oct 28 21:22 .vscode
+-rw-rw-r-- 1 nadine nadine  7946 Oct 26 18:16 y.output
+-rw-rw-r-- 1 nadine nadine 51201 Oct 29 23:11 y.tab.c
+-rw-rw-r-- 1 nadine nadine  2605 Oct 29 23:11 y.tab.h
+-rw-rw-r-- 1 nadine nadine 26344 Oct 29 23:11 y.tab.o
