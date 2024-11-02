@@ -217,6 +217,66 @@ Command::execute()
         close(defaulterr);
 		exit(0); // this exits the shell
 	}
+	int pipefd[2];
+    int prev_pipe_read = infd;
+	pid_t pid;
+    // Loop over each simple command
+    for (int i = 0; i < _numberOfSimpleCommands; i++) {
+        // Set up the next pipe if there is a following command
+        if (i < _numberOfSimpleCommands - 1) {
+            if (pipe(pipefd) == -1) {
+                perror("pipe failed");
+                exit(EXIT_FAILURE);
+            }
+            outfd = pipefd[1];
+        } else {
+            // Last command: use output redirection, if specified
+            outfd = (_outFile) ? outfd : defaultout;
+        }
+
+        // Fork process for each command
+        pid = fork();
+        if (pid == -1) {
+            perror("fork failed");
+            exit(EXIT_FAILURE);
+        }
+
+        if (pid == 0) { // Child process
+            // Redirect input
+            dup2(prev_pipe_read, 0);
+			if (prev_pipe_read != infd) 
+				close(prev_pipe_read);
+
+  
+
+            // Redirect output
+            if (outfd != defaultout) {
+                dup2(outfd, 1);
+                close(outfd);
+            }
+
+            // Redirect error
+            if (_errFile) {
+                dup2(errfd, 2);
+                close(errfd);
+            }
+
+            // Execute the command
+            execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
+            perror("execvp failed");
+            exit(1);
+        } else { // Parent process
+            // Close the write end of the current pipe in the parent
+            if (outfd != defaultout) 
+				close(outfd);
+			
+			if (prev_pipe_read != infd) 
+				close(prev_pipe_read);
+
+            // Prepare for the next command in the pipeline
+            prev_pipe_read = pipefd[0];
+        }
+    }
 
 	// Print contents of Command data structure
 	print();
@@ -227,25 +287,25 @@ Command::execute()
 	// and call exec
 	
 	// Execute each simple command
-	pid_t pid;
-    for (int i = 0; i < _numberOfSimpleCommands; i++) {
-        pid = fork();
-        if (pid == -1) {
-            perror("fork failed\n");
-            exit(2);
-        }
+	// pid_t pid;
+    // for (int i = 0; i < _numberOfSimpleCommands; i++) {
+    //     pid = fork();
+    //     if (pid == -1) {
+    //         perror("fork failed\n");
+    //         exit(2);
+    //     }
 
-        if (pid == 0) {
-            // Child process
-            printf("Executing command: %s\n", _simpleCommands[i]->_arguments[0]); // Debugging statement
-            execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
-            perror("execvp failed");
-            exit(1);
-        } else {
-            printf("Forked child process with PID: %d\n", pid); // Debugging statement
-        }
+    //     if (pid == 0) {
+    //         // Child process
+    //         printf("Executing command: %s\n", _simpleCommands[i]->_arguments[0]); // Debugging statement
+    //         execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
+    //         perror("execvp failed");
+    //         exit(1);
+    //     } else {
+    //         printf("Forked child process with PID: %d\n", pid); // Debugging statement
+    //     }
     
-	}
+	// }
 
 	// Restore input, output, and error
 

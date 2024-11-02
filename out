@@ -4,31 +4,11 @@
 
   #   Simple Commands
   --- ----------------------------------------------------------
-  0   "ls" 	"-al" 	
+  0   "ls" 	"-al" 	  1   "grep" 	"command" 	  2   "grep" 	"command.o" 	
 
   Output       Input        Error        Background
   ------------ ------------ ------------ ------------
   out          default      default      NO          
 
 
-total 356
-drwxrwxrwx 5 nadine nadine  4096 Nov  2 08:10 .
-drwxrwxr-x 3 nadine nadine  4096 Oct 24 20:44 ..
--rwxrwxrwx 1 nadine nadine  6542 Oct 31 22:06 command.cc
--rwxrwxrwx 1 nadine nadine   756 Oct 30 22:41 command.h
--rw-rw-r-- 1 nadine nadine 34400 Oct 31 22:07 command.o
-drwxrwxrwx 2 nadine nadine  4096 Oct 31 23:27 examples
-drwxrwxr-x 8 nadine nadine  4096 Oct 31 22:41 .git
--rw-rw-r-- 1 nadine nadine     9 Oct 28 18:49 .gitignore
--rw-rw-r-- 1 nadine nadine 45687 Oct 31 23:12 lex.yy.c
--rw-rw-r-- 1 nadine nadine 43696 Oct 31 23:12 lex.yy.o
--rwxrwxrwx 1 nadine nadine   338 Oct 24 22:11 Makefile
--rw-rw-r-- 1 nadine nadine   317 Nov  2 08:11 out
--rwxrwxr-x 1 nadine nadine 72000 Oct 31 23:25 shell
--rwxrwxrwx 1 nadine nadine   612 Oct 31 23:12 shell.l
--rwxrwxrwx 1 nadine nadine  3676 Oct 31 23:24 shell.y
-drwxrwxr-x 2 nadine nadine  4096 Oct 28 21:22 .vscode
--rw-rw-r-- 1 nadine nadine  7946 Oct 26 18:16 y.output
--rw-rw-r-- 1 nadine nadine 52770 Oct 31 23:25 y.tab.c
--rw-rw-r-- 1 nadine nadine  2634 Oct 31 23:25 y.tab.h
--rw-rw-r-- 1 nadine nadine 38704 Oct 31 23:25 y.tab.o
+-rw-rw-r-- 1 nadine nadine 62880 Nov  2 15:45 command.o

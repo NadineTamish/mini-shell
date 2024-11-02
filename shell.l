@@ -51,6 +51,9 @@
 "cd"	{
 		return CD;
 }
+">>&"	{
+		return APPENDAMPERSAND;
+}
 
 [^ \t\n][^ \t\n]*  {
 		/* Assume that file names have only alpha chars */
