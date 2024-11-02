@@ -18,6 +18,8 @@
 #include <signal.h>
 #include <fcntl.h>   // For open() and file flags
 #include "command.h"
+#include <time.h>
+#include <fstream>
 
 SimpleCommand::SimpleCommand()
 {
@@ -135,6 +137,20 @@ void handle_sigint(int sig) {
     fflush(stdout);          // Ensure the prompt appears immediately
 }
 
+
+void sigchld_handler(int signo) {
+    static time_t lastTime;
+    time(&lastTime); // Get the current time
+
+    // Open the log file
+    std::ofstream fw("termination.log", std::ios_base::app);
+    if (fw.is_open()) {
+        fw << "Child PID terminated at: " << ctime(&lastTime) << "\n";
+    }
+    fw.close();  
+}
+
+
 void
 Command::execute()
 {
@@ -214,18 +230,21 @@ Command::execute()
 	pid_t pid;
     for (int i = 0; i < _numberOfSimpleCommands; i++) {
         pid = fork();
-		if ( pid == -1 ) {
-			perror( "fork failed\n");
-			exit( 2 );
-		}
+        if (pid == -1) {
+            perror("fork failed\n");
+            exit(2);
+        }
 
-		if (pid == 0) {
-			//Child
-			
-			execvp(_simpleCommands[0]->_arguments[0], _simpleCommands[0]->_arguments);
-			perror("execvp failed");
-			exit(1);
-		}
+        if (pid == 0) {
+            // Child process
+            printf("Executing command: %s\n", _simpleCommands[i]->_arguments[0]); // Debugging statement
+            execvp(_simpleCommands[i]->_arguments[0], _simpleCommands[i]->_arguments);
+            perror("execvp failed");
+            exit(1);
+        } else {
+            printf("Forked child process with PID: %d\n", pid); // Debugging statement
+        }
+    
 	}
 
 	// Restore input, output, and error
@@ -240,8 +259,9 @@ Command::execute()
 	close( defaultout );
 	close( defaulterr );
 	
-	//signal_handler(SIGINT,logger);
+	
     signal(SIGINT, handle_sigint);
+
 	// Wait for last command if not in background
     if (!_background) {
         waitpid(pid, nullptr, 0);
@@ -271,6 +291,9 @@ int yyparse(void);
 int 
 main()
 {
+	
+    signal(SIGCHLD, sigchld_handler);
+
 	signal(SIGINT, handle_sigint);
 	//signal(SIGINT,SIG_IGN); //sets the SIGINT signal handler to SIG_IGN, which tells the program to ignore the signal instead of terminating.
 	Command::_currentCommand.prompt();
