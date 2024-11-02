@@ -13,7 +13,7 @@
 
 %token	<string_val> WORD
 
-%token 	NOTOKEN GREAT NEWLINE LESS APPEND PIPE AMPERSAND EXIT
+%token 	NOTOKEN GREAT NEWLINE LESS APPEND PIPE AMPERSAND EXIT CD
 
 %union	{
 		char   *string_val;
@@ -28,6 +28,7 @@ extern "C"
 #define yylex yylex
 #include <stdio.h>
 #include "command.h"
+#include <unistd.h>
 %}
 
 %%
@@ -54,6 +55,33 @@ simple_command:
         exit(0); // Exit the shell
 
 	} 
+	| CD WORD NEWLINE{
+		char list[200];
+		printf("Previous directory was %s\n", getcwd(list, 200));
+        
+        // Change to the specified directory
+        if (chdir($2) != 0) {
+            perror("cd failed"); // Handle the case where chdir fails
+        }
+        
+        printf("Current directory is %s\n", getcwd(list, 200));
+	}
+	|CD NEWLINE{
+		char list[200];
+		  printf("Previous directory was %s\n", getcwd(list, 200));
+        
+        // Change to the home directory
+        const char* homeDir = getenv("HOME");
+        if (homeDir != nullptr) {
+            if (chdir(homeDir) != 0) {
+                perror("cd failed"); // Handle the case where chdir fails
+            }
+        } else {
+            fprintf(stderr, "Home directory not found.\n");
+        }
+        
+        printf("Current directory is %s\n", getcwd(list, 200));
+	}
 	| error NEWLINE { yyerrok; }
 	;
     
@@ -70,6 +98,9 @@ command_and_args:
 	command_word arg_list {
 		Command::_currentCommand.insertSimpleCommand(Command::_currentSimpleCommand);
 	}
+	|command_word {
+        Command::_currentCommand.insertSimpleCommand(Command::_currentSimpleCommand);
+    }
 	| command_and_args PIPE command_word arg_list {
 		// Handle pipe logic here
 		Command::_currentCommand.insertSimpleCommand(Command::_currentSimpleCommand);

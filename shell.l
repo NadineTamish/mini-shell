@@ -16,8 +16,6 @@
 
 %%
 
-[ \t\n]+     /* Ignore whitespace */
-
 \n 	{
 		return NEWLINE;
 	}
@@ -48,6 +46,10 @@
 
 "exit"	{
 		return EXIT;
+}
+
+"cd"	{
+		return CD;
 }
 
 [^ \t\n][^ \t\n]*  {
