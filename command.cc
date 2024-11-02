@@ -60,6 +60,7 @@ Command::Command()
 	_errFile = 0;
 	_background = 0;
 	_appendFlag=0;
+	_outputErrorCombinedFlag=0;
 }
 
 void
@@ -95,9 +96,15 @@ Command:: clear()
 		free( _inputFile );
 	}
 
-	if ( _errFile ) {
-		free( _errFile );
-	}
+	// if ( _errFile ) {
+	// 	free( _errFile );
+	// 	_errFile = nullptr;
+	// }
+	// Only free _errFile if it's different from _outFile
+    if (_errFile && _errFile != _outFile) {
+        free(_errFile);
+        _errFile = nullptr;
+    }
 
 	_numberOfSimpleCommands = 0;
 	_outFile = 0;
@@ -105,6 +112,7 @@ Command:: clear()
 	_errFile = 0;
 	_background = 0;
 	_appendFlag=0;
+	_outputErrorCombinedFlag=0;
 }
 
 void
@@ -174,34 +182,71 @@ Command::execute()
     }
 
     // Output redirection (overwrites or appends)
-    if (_outFile != nullptr) {
-        if (_appendFlag) {
-            outfd = open(_outFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
-        } else {
-            outfd = open(_outFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
-        }
-        if (outfd < 0) {
-            perror("Output file open error");
-            return;
-        }
-        dup2(outfd, 1);
-        close(outfd);
-    }
+    // if (_outFile != nullptr) {
+    //     if (_appendFlag) {
+    //         outfd = open(_outFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    //     } else {
+    //         outfd = open(_outFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    //     }
+    //     if (outfd < 0) {
+    //         perror("Output file open error");
+    //         return;
+    //     }
+    //     dup2(outfd, 1);
+    //     close(outfd);
+    // }
 
     // Error redirection (overwrites or appends)
-    if (_errFile != nullptr) {
-        if (_appendFlag) {
-            errfd = open(_errFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    // if (_errFile != nullptr) {
+    //     if (_appendFlag) {
+    //         errfd = open(_errFile, O_WRONLY | O_CREAT | O_APPEND, 0666);
+    //     } else {
+    //         errfd = open(_errFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+    //     }
+    //     if (errfd < 0) {
+    //         perror("Error file open error");
+    //         return;
+    //     }
+    //     dup2(errfd, 2);
+    //     close(errfd);
+    // }
+	   // Output and error redirection with combined flag
+    if (_outFile != nullptr) {
+        if (_outputErrorCombinedFlag) {
+            // Open output file for both stdout and stderr redirection (append mode if _appendFlag is set)
+            outfd = open(_outFile, O_WRONLY | O_CREAT | (_appendFlag ? O_APPEND : O_TRUNC), 0666);
+            if (outfd < 0) {
+                perror("Output file open error");
+                return;
+            }
+            // Redirect stdout
+            dup2(outfd, 1);
+            // Redirect stderr to the same file as stdout
+            dup2(outfd, 2);
+            close(outfd);
         } else {
-            errfd = open(_errFile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+            // Standard output redirection (append mode if _appendFlag is set)
+            outfd = open(_outFile, O_WRONLY | O_CREAT | (_appendFlag ? O_APPEND : O_TRUNC), 0666);
+            if (outfd < 0) {
+                perror("Output file open error");
+                return;
+            }
+            dup2(outfd, 1);
+            close(outfd);
+
+            // Standard error redirection if _errFile is specified
+            if (_errFile) {
+                errfd = open(_errFile, O_WRONLY | O_CREAT | (_appendFlag ? O_APPEND : O_TRUNC), 0666);
+                if (errfd < 0) {
+                    perror("Error file open error");
+                    return;
+                }
+                dup2(errfd, 2);
+                close(errfd);
+            }
         }
-        if (errfd < 0) {
-            perror("Error file open error");
-            return;
-        }
-        dup2(errfd, 2);
-        close(errfd);
     }
+	
 
 	// Don't do anything if there are no simple commands
 	if ( _numberOfSimpleCommands == 1 && strcmp(_simpleCommands[0]->_arguments[0],"exit")==0 ) {

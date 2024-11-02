@@ -167,6 +167,13 @@ iomodifier_opt:
 		Command::_currentCommand._outFile = $2;
 		// Command::_currentCommand._outFile = $2;
 	}
+
+	| APPENDAMPERSAND WORD{
+		printf("   Yacc: insert output and error \"%s\"\n", $2);
+        Command::_currentCommand._outFile = $2;
+        Command::_currentCommand._errFile = $2;
+        Command::_currentCommand._outputErrorCombinedFlag = 1;
+	}
 	;
 
 background_opt:
